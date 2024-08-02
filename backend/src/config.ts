@@ -11,14 +11,14 @@ export const serverConfig = {
     serviceAccount: {
       projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
       clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL!,
-      privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n")!,
+      privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY!,
     }
 };
   
 export const clientConfig = {
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID?.replace('"',""),
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!.replace('"',""),
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN?.replace('"',""),
-    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.replace('"',""),
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID?.replace('"',"")
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
 };
