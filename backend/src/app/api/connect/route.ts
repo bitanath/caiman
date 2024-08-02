@@ -13,6 +13,6 @@ export async function GET(request: Request) {
   const q = query(collection(db,"designs"),where("appUserId","==","fsdfsdfsdf"))
   const results = await getDocs(q)
   const resultDocs = results.docs.map(d=>d.get("uid"))
-  return Response.json({ "teri":resultDocs })
+  return Response.json({ "teri":"maki" })
 }
 
