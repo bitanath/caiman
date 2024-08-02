@@ -1,0 +1,13 @@
+{
+    "dependencies": {
+        "color-namer": "^1.4.0",
+        "ejs": "^3.1.10",
+        "image-palette": "^2.1.0",
+        "image-pixels": "^2.2.2",
+        "image-size": "^1.1.1",
+        "jsonfile": "^6.1.0",
+        "@google/generative-ai": "^0.16.0",
+        "body-parser": "^1.20.2"
+    }
+   
+}

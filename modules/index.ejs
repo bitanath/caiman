@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= name %> Properties</title>
+    <script src=https://cdnjs.cloudflare.com/ajax/libs/heatmap.js/2.0.2/heatmap.min.js></script>
+    <link rel="stylesheet" href="https://unpkg.com/chota@latest">
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        padding: 5px;
+      }
+      .wrapper,
+      .canvas {
+        background: rgba(255, 255, 255, 0);
+        height: 100%;
+        width: 100%;
+        position: relative;
+      }
+      .bg {
+        background: url("/data/<%= name %>")
+          center center no-repeat;
+        z-index: -1;
+      }
+      .canvas {
+        z-index: 2;
+        width: <%= width %>px;
+        height: <%= height %>px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="row">
+        <div class="col">
+            <div class="wrapper is-center">
+                <div class="canvas bg" id="heatmap" data-width="<%= obj.imageDimensions.width %>" data-height="<%= obj.imageDimensions.height %>">
+                </div>
+            </div>
+        </div>
+        <div class="col"> 
+            <h4>Editing Properties for <%= name %></h4>
+            <div class="row">
+                <div class="col">
+                    <button id="next" type="button" onclick="skip('<%= name %>')" class="button primary outline">
+                        Skip
+                    </button>
+                </div>
+                <!-- <div class="col">
+                    <button id="drawing" type="button" onclick="stop()" class="button dark">
+                        Stop Drawing
+                    </button>
+                </div> -->
+                <div class="col">
+                    <button id="clear" type="button" onclick="reset()" class="button secondary">
+                        Clear Heatmap
+                    </button>
+                </div>
+                <div class="col">
+                    <button id="submit" type="button" onclick="send('<%= name %>',true)" class="button error">
+                        Submit
+                    </button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <form>
+                        <label for="type"> What type of Design is this? </label>
+                        <input type="text" name="type" id="type" value="<%= obj.type %>" required>
+                        <br>
+                        <label for="good"> What's good about this image </label>
+                        <textarea name="good" id="good"><%= obj.good %></textarea>
+                        <br>
+                        <label for="bad"> What's bad about this image </label>
+                        <textarea name="bad" id="bad"><%= obj.bad %></textarea>
+                        <br>
+                        <label for="spellcheck"> Are there any spelling or grammatical errors? </label>
+                        <input type="text" name="spellcheck" id="spellcheck" value="<%= obj.spellcheck %>" required>
+                        <br>
+                        <label for="placeholder"> Is there any placeholder text? </label>
+                        <input type="text" name="placeholder" id="placeholder" value="<%= obj.placeholder %>" required>
+                        <br>
+                        <label for="palette"> What is the color palette or the primary colors of this design? </label>
+                        <textarea type="text" name="palette" id="palette" rows="6"><%= namedColors %></textarea>
+                        <br>
+                        <label for="complementary"> What are some complementary colors that can be used with this design? </label>
+                        <textarea type="text" name="complementary" id="complementary" rows="6"><%= complementaryColors %></textarea>
+                        <br>
+                        <label for="item"> What is an item that can be added to enhance the image? </label>
+                        <input type="text" name="item" id="item" value="<%= obj.item %>" required>
+                        <br>
+                        <label for="canva"> What are some tools that you'd recommend to improve the design? </label>
+                        <input type="text" name="canva" id="canva" value="<%= obj.canva %>" required>
+                        <br>
+                        
+                    </form>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        window.addEventListener('load', e => {
+        console.clear();
+        window.isDrawing = false
+        const width = document.querySelector(".canvas").clientWidth
+        const height = document.querySelector(".canvas").clientHeight
+
+        console.log("Got width and height of canvas ",width,height)
+        window.heatmap = h337.create({
+            container: document.querySelector('.canvas'),
+            radius: parseInt(width * height / 8e3),
+            maxOpacity: 0.7,
+            minOpacity: 0
+        });
+        const target = document.querySelector('.wrapper');
+        let intervalId;
+
+        
+        target.addEventListener('mouseover', e => {
+            // console.log('mousedown');
+            target.onmousemove = (e) => {
+            // console.log('mousemove');
+            heatmap.addData({
+                x: e.layerX,
+                y: e.layerY,
+                value: 0.2
+            });
+            };
+        });
+        target.addEventListener('mouseover', e => {
+            // console.log('mousedown');
+            target.touchmove = (e) => {
+            // console.log('mousemove');
+            e.preventDefault();
+            heatmap.addData({
+                x: e.layerX,
+                y: e.layerY,
+                value: 0.2
+            });
+            };
+        }, false);
+        target.addEventListener('mouseup', e => {
+            // console.log('mousup');
+            target.onmousemove = null;
+        });
+        target.addEventListener('touchend', e => {
+            // console.log('mousup');
+            target.touchmove = null;
+        }, false);
+        
+    });
+
+    function stop(){
+        document.querySelector('.wrapper').onmousemove = null
+        document.querySelector('.wrapper').touchmove = null
+    }
+
+    function reset(){
+        heatmap.setData({min:0,max:0.7,data:[]})
+        heatmap.repaint()
+    }
+
+    function skip(name){
+        window.location.href = `/${name}/next`
+    }
+
+    function send(name,forward){
+        console.log("Sending ",name)
+        const map = heatmap.getDataURL()
+        const width = document.getElementById("heatmap").dataset.width
+        const height = document.getElementById("heatmap").dataset.height
+        const type = document.getElementById("type").value
+        const good = document.getElementById("good").value
+        const bad = document.getElementById("bad").value
+        const spellcheck = document.getElementById("spellcheck").value
+        const placeholder = document.getElementById("placeholder").value
+        const palette = document.getElementById("palette").value
+        const complementary = document.getElementById("complementary").value
+        const item = document.getElementById("item").value
+        const canva = document.getElementById("canva").value
+        fetch( `/${name}/send`,{
+            method: 'POST',
+            headers: {
+                'Accept':'application/json',
+                'Content-Type': 'application/json'
+
+            },
+            body: JSON.stringify({
+                name,map,type,good,bad,spellcheck,placeholder,palette,complementary,item,canva
+            })
+        })
+        .then((response) => {
+            if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log(data)
+            if(forward){
+                window.location.href = `/${name}/next`
+            }
+        })
+        .catch((error) => console.log(`Error: ${error}`))
+        .finally(() => console.log("Fetch complete!"));
+    }
+    </script>
+  </body>
+</html>
