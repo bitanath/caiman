@@ -16,9 +16,9 @@ export default async function Dashboard(){
         serviceAccount: serverConfig.serviceAccount,
     });
     
-    if (!tokens) {
-        notFound();
-    }
+    // if (!tokens) {
+    //     notFound();
+    // }
     return (
         <PageWithSidebar>
             <VStack>

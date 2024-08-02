@@ -20,12 +20,43 @@ const nextConfig = {
                 ]
             }
         ]
-    } 
+    },
+    // webpack: function (config, options) {
+    //     config.experiments = { asyncWebAssembly: false, syncWebAssembly: true, layers: true, topLevelAwait: false };
+    
+    //     return config;
+    // } 
 };
 
 export default withKumaUI(nextConfig, {
-    // The destination to emit an actual CSS file. If not provided, the CSS will be injected via virtual modules.
-     outputDir: "./.kuma", // Optional
-     // Enable WebAssembly support for Kuma UI. Default is false and will use Babel to transpile the code.
-    //  wasm: true // Optional
+     outputDir: "./.kuma",
 });
+
+function patchWasmModuleImport(config, isServer) {
+    config.experiments = Object.assign(config.experiments || {}, {
+      asyncWebAssembly: true,
+    });
+    config.module.defaultRules = [
+      {
+        type: 'javascript/auto',
+        resolve: {},
+      },
+      {
+        test: /\.json$/i,
+        type: 'json',
+      },
+    ];
+    config.optimization.moduleIds = 'named';
+  
+    config.module.rules.push({
+      test: /\.wasm$/,
+      type: 'asset/resource',
+    });
+  
+    // TODO: improve this function -> track https://github.com/vercel/next.js/issues/25852
+    if (isServer) {
+      config.output.webassemblyModuleFilename = './../static/wasm/[modulehash].wasm';
+    } else {
+      config.output.webassemblyModuleFilename = 'static/wasm/[modulehash].wasm';
+    }
+}

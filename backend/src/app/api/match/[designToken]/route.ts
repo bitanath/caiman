@@ -1,9 +1,4 @@
-import * as admin from 'firebase-admin'
-import { serverApp } from '@/../firebase'
-import * as Functions from '../../functions'
-
-const db = admin.firestore(serverApp)
- 
+import * as Functions from './functions' 
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request,{ params }: { params: { designToken: string } }) {
@@ -25,7 +20,8 @@ export async function POST(request: Request,{ params }: { params: { designToken:
     if(!designId) return Response.json({ "error":"Unable to retrieve Design Id" },{status:403})
     if(!userId) return Response.json({ "error":"Unable to retrieve Design Id" },{status:403})
     
-    return Response.json({ designId,brandId,userId },{status:200})
+    
+    return Response.json({ designId,brandId,userId},{status:200})
   }catch(e){
     return Response.json({ "error": "Unable to find user or design"},{status:403})
   }

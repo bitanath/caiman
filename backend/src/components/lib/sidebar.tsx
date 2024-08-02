@@ -209,7 +209,7 @@ export const SidebarButton = ({
       onClick={onClick}
       variant={"ghost"}
       className={cn(
-        "flex items-center justify-start gap-2  group/sidebar py-2 px-0",
+        "flex items-center justify-start gap-2 group/sidebar hover:bg-neutral py-2 px-0",
         className
       )}
       {...props}

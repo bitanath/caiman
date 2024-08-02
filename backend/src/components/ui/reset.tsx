@@ -20,7 +20,7 @@ export function ResetComponent() {
   return (
     <div className="flex items-center justify-center py-0">
       <div className="dark:bg-stone-950  h-full rounded-md">
-        <div className=" items-start justify-center gap-6 rounded-lg p-2 md:p-8 grid grid-cols-1 ">
+        <div className=" items-start justify-center gap-6 rounded-lg  grid grid-cols-1 ">
           <div className="col-span-1 grid items-start gap-6 lg:col-span-1">
             <div>
               <TextureCardStyled>

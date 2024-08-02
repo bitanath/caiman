@@ -2,9 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
-import { app } from "../../../firebase";
+import { app } from "@/../firebase";
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
 import { HStack,VStack,Spacer,Box,Text } from "@kuma-ui/core"
@@ -26,7 +25,6 @@ export default function Signup() {
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-
     setError("");
     let reject = false
 
