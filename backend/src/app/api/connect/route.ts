@@ -1,18 +1,16 @@
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore'
-import { initializeServerApp } from 'firebase/app'
-import { clientConfig } from '@/config'
+import * as admin from 'firebase-admin'
+import { serverApp } from '@/../firebase'
 
-const app = initializeServerApp(clientConfig,{})
+const db = admin.firestore(serverApp)
  
 export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {
-  const db = getFirestore(app)
-  
-  console.log("Got firestore db",db)
-  
-  const q = query(collection(db,"designs"),where("appUserId","==","fsdfsdfsdf"))
-  const results = await getDocs(q)
-  const resultDocs = results.docs.map(d=>d.get("uid"))
-  return Response.json({ "teri": process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID, "maka":"bhosda" })
+  const citiesRef = db.collection('designs');
+  const snapshot = await citiesRef.where('appUserId', '==', "fsdfsdfsdf").get();
+  snapshot.forEach(doc => {
+    console.log(doc.id, '=>', doc.data());
+  })
+  const items = snapshot.docs.map(d=>d.data())
+  return Response.json({ "teri": process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID, "maka":"bhosda",items })
 }
 

@@ -88,3 +88,21 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
+  - variable: CANVA_APP_ID
+    secret: canvaAppPlatformId
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: CANVA_CONNECT_ID
+    secret: canvaConnectPlatformId
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: CANVA_CONNECT_SECRET
+    secret: canvaConnectPlatformSecret
+    availability:
+      - BUILD
+      - RUNTIME
