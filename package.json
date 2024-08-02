@@ -1,6 +1,6 @@
 {
-  "name": "canva-apps-sdk-starter-kit",
-  "description": "A boilerplate for creating Canva Apps.",
+  "name": "caiman",
+  "description": "An app to link to canva.",
   "scripts": {
     "start": "ts-node ./scripts/start/start.ts",
     "build": "webpack --config webpack.config.js --mode production",

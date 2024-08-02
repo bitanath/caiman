@@ -2,7 +2,6 @@ import sys
 import numpy as np
 import torch
 import safetensors.torch as sf
-import subprocess
 
 from io import BytesIO
 import base64
