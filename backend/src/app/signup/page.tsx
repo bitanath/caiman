@@ -68,6 +68,7 @@ export default function Signup() {
       const user = response.user
       toast.info("Signed Up Successfully")
       await updateProfile(user,{displayName: firstName+ " " + lastName})
+      console.log("Updated profile with display name",user,firstName+ " " + lastName)
       router.push("/login");
     } catch (e) {
       setError((e as Error).message);
