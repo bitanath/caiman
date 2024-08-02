@@ -5,8 +5,6 @@ import { clientConfig, serverConfig } from "./config";
 const PUBLIC_PATHS = ['/', '/signup', '/login', '/reset'];
 
 export default function middleware(request: NextRequest) {
-  console.log("Middle!")
-  // return NextResponse.redirect(new URL('/login', request.url))
   return authMiddleware(request, {
     loginPath: "/api/login",
     logoutPath: "/api/logout",

@@ -1,6 +1,7 @@
 "use client"
 
-import { ArrowRight, Merge } from "lucide-react"
+import { ArrowRight } from "lucide-react"
+import { CaimanIconColorLarge } from "./icon";
 import Link from "next/link";
 import { Dispatch, SetStateAction,FormEvent } from "react";
 
@@ -33,12 +34,12 @@ export function LoginComponent({email,setEmail,password,setPassword,submit}:Logi
             <div>
               <TextureCardStyled>
                 <TextureCardHeader className="flex flex-col gap-1 items-center justify-center p-4">
-                  <div className="p-3 bg-neutral-950 rounded-full mb-3">
-                    <Merge className="h-7 w-7 stroke-neutral-200" />
+                  <div className="p-3 bg-gray-400/10 rounded-full mb-4">
+                    <CaimanIconColorLarge className="h-14 w-14" />
                   </div>
-                  <TextureCardTitle>Create your account</TextureCardTitle>
-                  <p className="text-center">
-                    Welcome! Please fill in the details to get started.
+                  <TextureCardTitle>Login To Continue</TextureCardTitle>
+                  <p className="text-center text-sm">
+                    Welcome! Please enter your email and password.
                   </p>
                 </TextureCardHeader>
                 <TextureSeparator />

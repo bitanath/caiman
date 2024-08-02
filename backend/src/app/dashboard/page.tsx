@@ -22,7 +22,7 @@ export default async function Dashboard(){
     return (
         <PageWithSidebar>
             <VStack>
-                
+                <HStack><Spacer width={30}></Spacer></HStack>
             </VStack>
         </PageWithSidebar>
     )

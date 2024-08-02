@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/themeprovider"
 import { Inter } from "next/font/google";
-import Navbar from "@/components/ui/navbar";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Canary for Canva",
+  title: "Caiman for Canva",
   description: "Get Realtime interactive feedback on your design",
 };
 
@@ -18,6 +17,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+      <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
       <body className={inter.className}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange >
         {children}
