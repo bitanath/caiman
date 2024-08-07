@@ -14,9 +14,11 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 export function PageWithSidebar({
-    children
+    children,
+    name
 }:{
-    children: React.ReactNode
+    children: React.ReactNode;
+    name:string
 }) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -46,19 +48,19 @@ export function PageWithSidebar({
   const links = [
     {
       label: "Account",
-      href: "#",
+      href: "/dashboard/auth",
       icon: ( <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> ),
       type: "link"
     },
     {
       label: "History",
-      href: "#",
+      href: "/dashboard/chats",
       icon: ( <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> ),
       type: "link"
     },
     {
       label: "Logout",
-      href: "#",
+      href: "",
       icon: ( <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> ),
       type: "button"
     },
@@ -74,7 +76,7 @@ export function PageWithSidebar({
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            {open ? <Logo name={"Bitan Nath"}/> : <LogoIcon />}
+            {open ? <Logo name={name}/> : <LogoIcon initials={getInitials(name)}/>}
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
                 link.type == "link" ? <SidebarLink key={idx} link={link} /> : <SidebarButton key={idx} label={link.label} icon={link.icon} onClick={handleLogout}></SidebarButton>
@@ -99,9 +101,9 @@ export const Logo = ({name}:{
   return (
     <Link
       href="#"
-      className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
+      className="font-normal flex space-x-2 items-center text-sm text-white py-1 relative z-20"
     >
-      <div className="h-5 w-6 bg-black dark:bg-white rounded-lg rounded-sm rounded-lg rounded-sm flex-shrink-0 text-xs text-center items-center pt-[2px]">BN</div>
+      <div className="h-5 w-6 bg-black text-white dark:bg-white dark:text-black rounded-lg rounded-sm rounded-lg rounded-sm flex-shrink-0 text-xs text-center items-center pt-[2px]">{getInitials(name)}</div>
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -113,13 +115,13 @@ export const Logo = ({name}:{
   );
 };
 
-export const LogoIcon = () => {
+export const LogoIcon = ({initials}:{initials:string}) => {
   return (
     <Link
       href="#"
-      className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
+      className="font-normal flex space-x-2 items-center text-sm text-white py-1 relative z-20"
     >
-      <div className="h-5 w-6 bg-black dark:bg-white rounded-lg rounded-sm rounded-lg rounded-sm flex-shrink-0 text-xs text-center items-center pt-[2px]">BN</div>
+      <div className="h-5 w-6 bg-black dark:text-black dark:bg-white rounded-lg rounded-sm rounded-lg rounded-sm flex-shrink-0 text-xs text-center items-center pt-[2px]">{initials}</div>
     </Link>
   );
 };
@@ -138,3 +140,13 @@ const Dashboard = ({
     </div>
   );
 };
+
+function getInitials(name:string):string{
+    let names = name.split(/\s+/g),
+    initials = names[0].substring(0, 1).toUpperCase();
+    
+    if (names.length > 1) {
+        initials += names[names.length - 1].substring(0, 1).toUpperCase();
+    }
+    return initials;
+}

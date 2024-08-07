@@ -2,6 +2,7 @@ const bodyParser = require('body-parser')
 const jsonfile = require('jsonfile')
 const express = require('express');
 const sharp = require('sharp')
+const ejs = require('ejs')
 const fs = require('fs')
 const app = express()
 

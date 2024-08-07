@@ -8,9 +8,44 @@ import { AnimatedGradientButton } from "@/components/lib/animated-gradient-text"
 import { BackgroundBeams } from "@/components/lib/background-beams";
 import { ShimmeringCTA } from "@/components/ui/shimmer-cta";
 import Navbar from "@/components/ui/navbar";
+import { clientConfig,serverConfig } from "@/config";
+import { getTokens } from "next-firebase-auth-edge";
+import { cookies } from "next/headers";
 
-export default function Home() {
-
+export default async function Home() {
+  const tokens = await getTokens(cookies(), {
+    apiKey: clientConfig.apiKey,
+    cookieName: serverConfig.cookieName,
+    cookieSignatureKeys: serverConfig.cookieSignatureKeys,
+    serviceAccount: serverConfig.serviceAccount,
+  });
+  if(!tokens){
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center pt-24">
+        <Navbar></Navbar>
+        <VStack justifyContent={"center"} alignItems={"center"}>
+            <Box className="z-10">
+              <ShimmeringCTA>
+                <Link href="https://www.freepik.com/author/catalyststuff">
+                  <span className="flex"><span><CaimanIconColor className="scale-90 mx-2"></CaimanIconColor></span> Built for Canva AI and Integrations Hackathon</span>
+                </Link>
+              </ShimmeringCTA>
+              <GradientHeading variant="default" size="xxxl" weight="bold" className="text-center">
+                AI Design Critic
+              </GradientHeading>
+              <Spacer height={4}></Spacer>
+              <HeroCaption></HeroCaption>
+              <VStack>
+                <Link href="/signup">
+                  <AnimatedGradientButton emoji="🔐">Sign Up to Connect with Canva</AnimatedGradientButton>
+                </Link>
+              </VStack>
+            </Box>
+          <BackgroundBeams></BackgroundBeams>
+        </VStack>
+      </main>
+    );
+  }
   return (
     <main className="flex min-h-screen flex-col items-center justify-center pt-24">
       <Navbar></Navbar>
@@ -27,7 +62,7 @@ export default function Home() {
             <Spacer height={4}></Spacer>
             <HeroCaption></HeroCaption>
             <VStack>
-              <Link href="/dashboard">
+              <Link href="/login">
                 <AnimatedGradientButton emoji="🔐">Login to Connect with Canva</AnimatedGradientButton>
               </Link>
             </VStack>

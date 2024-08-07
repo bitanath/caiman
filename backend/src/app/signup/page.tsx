@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { app } from "@/../firebase";
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
 
 import { HStack,VStack,Spacer,Box,Text } from "@kuma-ui/core"
 import { BackgroundBeams } from "@/components/lib/background-beams";
@@ -62,11 +62,13 @@ export default function Signup() {
     }
 
     try {
+      toast.loading("Signing up")
       let response = await createUserWithEmailAndPassword(getAuth(app), email, password)
       const user = response.user
-      toast.info("Signed Up Successfully")
       await updateProfile(user,{displayName: firstName+ " " + lastName})
       console.log("Updated profile with display name",user,firstName+ " " + lastName)
+      await sendEmailVerification(user)
+      toast.info("Signed Up Successfully")
       router.push("/login");
     } catch (e) {
       setError((e as Error).message);
@@ -83,7 +85,7 @@ export default function Signup() {
           </Box>
         <BackgroundBeams></BackgroundBeams>
       </VStack>
-      <Toaster richColors closeButton></Toaster>
+      <Toaster richColors closeButton position="top-center"></Toaster>
     </main>
   );
 }

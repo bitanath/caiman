@@ -1,7 +1,6 @@
 "use client"
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 import { app } from "@/../firebase";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
@@ -38,30 +37,26 @@ export default function Login() {
     }
 
     if(reject) return
-
-    try {
-      const credential = await signInWithEmailAndPassword(
-        getAuth(app),
-        email,
-        password
-      );
-      const idToken = await credential.user.getIdToken();
-
-      if(idToken){
-        toast.success("Logged in, now redirecting to dashboard")
-      }
-
-      await fetch("/api/login", {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      });
-
-      router.push("/dashboard")
-    } catch (e) {
-      setError((e as Error).message);
-      toast.warning("Incorrect email or password")
-    }
+    toast.promise(signInWithEmailAndPassword(
+      getAuth(app),
+      email,
+      password
+    ), {
+      loading: 'Logging In...',
+      success: (credential) => {
+        credential.user.getIdToken().then(async idToken=>{
+          if(!idToken) return toast.error("Errored out while logging in!")
+          await fetch("/api/login", {
+            headers: {
+              Authorization: `Bearer ${idToken}`,
+            },
+          })
+          router.replace("/dashboard")
+        })
+        return "Logged In... Now Redirecting"
+      },
+      error: 'Errored out while logging in',
+    });
   }
 
   return (
@@ -73,7 +68,7 @@ export default function Login() {
           </Box>
         <BackgroundBeams></BackgroundBeams>
       </VStack>
-      <Toaster richColors closeButton></Toaster>
+      <Toaster richColors closeButton position="top-center"></Toaster>
     </main>
   );
 }

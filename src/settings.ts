@@ -1,3 +1,3 @@
 export const config = {
-    apiUrl: "https://localhost:3001/api"
+    apiUrl: "https://localhost:3001"
 }
