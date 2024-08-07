@@ -84,7 +84,7 @@ export const App = () => {
         <Toast visible={!!alert} tone={level} onDismiss={()=>setAlert(undefined)}>{alert}</Toast>
         <Spacer padding="0.5u"></Spacer>
         <Rows spacing="0.5u" align="stretch">
-            <div style={{height: '300px'}}>
+            <div style={{height: '280px'}}>
               <Placeholder shape="rectangle"></Placeholder>
             </div>
             <TitlePlaceholder size="large"></TitlePlaceholder>

@@ -16,6 +16,7 @@ export const serverConfig = {
 };
   
 export const clientConfig = {
+    appId: process.env.FIREBASE_WEB_APP_ID || "",
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID|| "",
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY|| "",
     authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN|| "",

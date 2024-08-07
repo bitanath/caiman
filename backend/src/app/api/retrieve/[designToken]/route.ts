@@ -69,6 +69,7 @@ export async function POST(request: Request,{ params }: { params: { designToken:
       }),
     })
     const {job} = await fetcher.json()
+    
 
     if(!job || !job.id || !job.status) return Response.json({ "error":"Job is not available" },{status:403})
     

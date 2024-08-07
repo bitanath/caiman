@@ -1,11 +1,11 @@
-import asyncio
-import tornado
 import subprocess
+import tornado
+
 import torch
 from PIL import Image
 from transformers import AutoProcessor, AutoModelForCausalLM, pipeline
 from diffusers import DiffusionPipeline,AutoPipelineForImage2Image
-from utils import florence_caption,enhance_prompt,erode,dilate,merge_bboxes,mask_to_boxes,from_base64,to_base64
+from utils import florence_caption,enhance_prompt,erode,dilate,merge_bboxes,mask_to_boxes
 
 import random
 import numpy as np
@@ -13,7 +13,6 @@ import os
 import cv2
 from textsegmenter import build_sam,SamPredictor
 from heatmapper import Net
-
 
 subprocess.run('pip install flash-attn --no-build-isolation', env={'FLASH_ATTENTION_SKIP_CUDA_BUILD': "TRUE"}, shell=True)
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -46,7 +45,7 @@ def generate(img,existing_prompt):
     generator = torch.Generator(device=device).manual_seed(seed)
     prompt = florence_caption(image=img,florence_model=florence_model,florence_processor=florence_processor)
     prompt = enhance_prompt(enhancer_long,prompt)
-    prompt = existing_prompt+","+prompt if existing_prompt is not None else prompt
+    prompt = existing_prompt+","+prompt
     alternative = pipe( prompt=prompt, generator=generator, num_inference_steps=4, width=img.size[0], height=img.size[1], guidance_scale=0.0 )
     alternate = alternative.images[0]
     predictor.set_image(np.asarray(alternate))
@@ -78,35 +77,3 @@ def heatmap(img):
     return overlaid
 
 
-
-class MainHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.write("Bad Request")
-    
-    def post(self):
-        auth = self.request.headers.get("authorization")
-        if(auth is None):
-            self.write({"err":"Unauthenticated Request"})
-        args = tornado.escape.json_decode(self.request.body)
-        imgBase64 = args.get("imgBase64")
-        
-        img = from_base64(imgBase64)
-        alternate,inpainted,refined,arr = generate(img=img)
-        alternateB64 = to_base64(alternate)
-        backgroundB64 = to_base64(refined)
-
-        self.write({"alternate":alternateB64,"background":backgroundB64})
-
-def make_app():
-    return tornado.web.Application([
-        (r"/", MainHandler),
-    ])
-
-async def main():
-    app = make_app()
-    app.listen(8000)
-    print("Running on 8000")
-    await asyncio.Event().wait()
-
-if __name__ == "__main__":
-    asyncio.run(main())

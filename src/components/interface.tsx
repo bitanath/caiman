@@ -5,7 +5,7 @@ import styles from "styles/components.css";
 import Spacer from "./spacer";
 import Toast from "./toast";
 
-import { DummyElement } from "./thumb";
+import { DummyElement,ImageProps } from "./thumb";
 
 import { config } from "../settings";
 import { auth } from "@canva/user";
@@ -20,43 +20,75 @@ export default function Interface({showAlert,level,setAlert,alert}:{
     alert?:string|undefined
 }){
     const heatmapImage = "https://img.freepik.com/free-vector/gradient-heat-map-background_23-2149528520.jpg?t=st=1722156716~exp=1722160316~hmac=0390026c4ba6a8059642476127ac95ba3faab20bc4cd38a0cc2be72228db2fa0&w=2000"
-    const [images,setImages] = useState([])
+    const [images,setImages] = useState([]) //list of image props
+    const [currentIndex,setCurrentIndex] = useState(0)
 
     useEffect(()=>{
         //TODO now query for design here and get all the pages
-        console.log("To be queried")
-        auth.getCanvaUserToken().then(userToken=>{
-          getDesignToken().then(took=>{
-            const designToken = took.token
-            return fetch(`${config.apiUrl}/api/retrieve/${designToken}`,{
-              method: "POST",
-              mode: 'cors',
-              headers: {
-                Authorization: `Bearer ${userToken}`,
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-              },
-              body: JSON.stringify({
-                "fetch":"all"
-              })
-            })
-          }).then(done=>{
-            return done.json()
-          }).then(json=>{
-            console.log("Got exported designs ",json)
-            const {urls}:{urls:[string]} = json
-            if(!urls) throw 'Unable to get exported design'
-            //TODO handle multi page designs
-            const arr = urls.map((url,index)=>{
-              return {thumbnailUrl:url,thumbnailHeight:280,index}
-            })
-            setImages
-
-          }).catch(err=>{
-              showAlert("Error "+err.toString(),"critical")
-          })
-        })
+        fetchAllImages()
     })
+
+    function fetchImageProperties(url:string){
+      auth.getCanvaUserToken().then(userToken=>{
+        getDesignToken().then(took=>{
+          const designToken = took.token
+          return fetch(`${config.apiUrl}/api/design/${designToken}`,{
+            method: "POST",
+            mode: 'cors',
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({
+              "url":url
+            })
+          })
+        }).then(done=>{
+          return done.json()
+        }).then(json=>{
+          console.log("Got response from server",json)
+        })
+      })
+    }
+
+    function fetchAllImages(){
+      auth.getCanvaUserToken().then(userToken=>{
+        getDesignToken().then(took=>{
+          const designToken = took.token
+          return fetch(`${config.apiUrl}/api/retrieve/${designToken}`,{
+            method: "POST",
+            mode: 'cors',
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({
+              "fetch":"all"
+            })
+          })
+        }).then(done=>{
+          return done.json()
+        }).then(json=>{
+          console.log("Got exported designs ",json)
+          const {urls}:{urls:[string]} = json
+          if(!urls) throw 'Unable to get exported design'
+          //TODO handle multi page designs
+          const arr = urls.map((url,index)=>{
+            console.log(url)
+            if(index == currentIndex){
+              console.log("Fetching image properties for ",url)
+              fetchImageProperties(url)
+            }
+            return {thumbnailUrl:url,thumbnailHeight:280,index}
+          })
+
+        }).catch(err=>{
+            showAlert("Error "+err.toString(),"critical")
+        })
+      })
+    }
 
     return (
         <div className={styles.scrollContainer}>
@@ -84,7 +116,7 @@ export default function Interface({showAlert,level,setAlert,alert}:{
                   onDragStart={() => {}}
                   thumbnailUrl= {heatmapImage}
                 />
-                <DummyElement callbackFn={()=>{}}></DummyElement>
+                
               </Carousel>
               
               <Columns spacing="0.5u" align="center">
