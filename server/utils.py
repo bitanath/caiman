@@ -12,13 +12,19 @@ def to_base64(pil_image):
     img_str = base64.b64encode(buffered.getvalue())
     return img_str
 
+def to_base64_png(pil_image):
+    buffered = BytesIO()
+    pil_image.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue())
+    return img_str
+
 def from_base64(base64_str):
     decoded = base64.b64decode(base64_str)
     im = Image.open(BytesIO(decoded))
     return im
 
 
-def florence_caption(florence_processor,florence_model,image):
+def florence_caption(florence_processor,florence_model,image,device):
     if not isinstance(image, Image.Image):
         image = Image.fromarray(image)
     
@@ -26,7 +32,7 @@ def florence_caption(florence_processor,florence_model,image):
     generated_ids = florence_model.generate(
         input_ids=inputs["input_ids"],
         pixel_values=inputs["pixel_values"],
-        max_new_tokens=1024,
+        max_new_tokens=78,
         early_stopping=False,
         do_sample=False,
         num_beams=3,
@@ -58,33 +64,12 @@ def dilate(image,radius=5,iterations=2):
     return Image.fromarray(erosion)
 
 def merge_bboxes(bboxes, delta_x=0.1, delta_y=0.1):
-    """
-    Arguments:
-        bboxes {list} -- list of bounding boxes with each bounding box is a list [xmin, ymin, xmax, ymax]
-        delta_x {float} -- margin taken in width to merge
-        detlta_y {float} -- margin taken in height to merge
-    Returns:
-        {list} -- list of bounding boxes merged
-    """
+
 
     def is_in_bbox(point, bbox):
-        """
-        Arguments:
-            point {list} -- list of float values (x,y)
-            bbox {list} -- bounding box of float_values [xmin, ymin, xmax, ymax]
-        Returns:
-            {boolean} -- true if the point is inside the bbox
-        """
         return point[0] >= bbox[0] and point[0] <= bbox[2] and point[1] >= bbox[1] and point[1] <= bbox[3]
 
     def intersect(bbox, bbox_):
-        """
-        Arguments:
-            bbox {list} -- bounding box of float_values [xmin, ymin, xmax, ymax]
-            bbox_ {list} -- bounding box of float_values [xmin, ymin, xmax, ymax]
-        Returns:
-            {boolean} -- true if the bboxes intersect
-        """
         for i in range(int(len(bbox) / 2)):
             for j in range(int(len(bbox) / 2)):
                 # Check if one of the corner of bbox inside bbox_
@@ -119,13 +104,10 @@ def merge_bboxes(bboxes, delta_x=0.1, delta_y=0.1):
                     b_[0] - (b_[2] - b_[0]) * delta_x, b_[1] - (b[3] - b[1]) * delta_y,
                     b_[2] + (b_[2] - b_[0]) * delta_x, b_[3] + (b_[3] - b_[1]) * delta_y
                 ]
-                # Merge bboxes if bboxes with margin have an intersection
-                # Check if one of the corner is in the other bbox
-                # We must verify the other side away in case one bounding box is inside the other
+                
                 if intersect(bmargin, b_margin) or intersect(b_margin, bmargin):
                     tmp_bbox = [min(b[0], b_[0]), min(b[1], b_[1]), max(b_[2], b[2]), max(b[3], b_[3])]
                     used.append(j)
-                    # print(bmargin, b_margin, 'done')
                     nb_merge += 1
                 if tmp_bbox:
                     b = tmp_bbox
@@ -135,7 +117,7 @@ def merge_bboxes(bboxes, delta_x=0.1, delta_y=0.1):
                 new_bboxes.append(b)
             used.append(i)
             tmp_bbox = None
-        # If no merge were done, that means all bboxes were already merged
+        
         if nb_merge == 0:
             break
         bboxes = copy.deepcopy(new_bboxes)
@@ -143,23 +125,11 @@ def merge_bboxes(bboxes, delta_x=0.1, delta_y=0.1):
     return new_bboxes
 
 def mask_to_boxes(mask) :
-    """ Convert a boolean (Height x Width) mask into a (N x 4) array of NON-OVERLAPPING bounding boxes
-    surrounding "islands of truth" in the mask.  Boxes indicate the (Left, Top, Right, Bottom) bounds
-    of each island, with Right and Bottom being NON-INCLUSIVE (ie they point to the indices AFTER the island).
-
-    This algorithm (Downright Boxing) does not necessarily put separate connected components into
-    separate boxes.
-
-    You can "cut out" the island-masks with
-        boxes = mask_to_boxes(mask)
-        island_masks = [mask[t:b, l:r] for l, t, r, b in boxes]
-    """
-    max_ix = max(s+1 for s in mask.shape)   # Use this to represent background
-    # These arrays will be used to carry the "box start" indices down and to the right.
+    max_ix = max(s+1 for s in mask.shape)
     x_ixs = np.full(mask.shape, fill_value=max_ix)
     y_ixs = np.full(mask.shape, fill_value=max_ix)
 
-    # Propagate the earliest x-index in each segment to the bottom-right corner of the segment
+    
     for i in range(mask.shape[0]):
         x_fill_ix = max_ix
         for j in range(mask.shape[1]):
@@ -168,7 +138,6 @@ def mask_to_boxes(mask) :
             x_fill_ix = min(x_fill_ix, j, above_cell_ix) if still_active else max_ix
             x_ixs[i, j] = x_fill_ix
 
-    # Propagate the earliest y-index in each segment to the bottom-right corner of the segment
     for j in range(mask.shape[1]):
         y_fill_ix = max_ix
         for i in range(mask.shape[0]):
@@ -177,13 +146,12 @@ def mask_to_boxes(mask) :
             y_fill_ix = min(y_fill_ix, i, left_cell_ix) if still_active else max_ix
             y_ixs[i, j] = y_fill_ix
 
-    # Find the bottom-right corners of each segment
+    
     new_xstops = np.diff((x_ixs != max_ix).astype(np.int32), axis=1, append=False)==-1
     new_ystops = np.diff((y_ixs != max_ix).astype(np.int32), axis=0, append=False)==-1
     corner_mask = new_xstops & new_ystops
     y_stops, x_stops = np.array(np.nonzero(corner_mask))
 
-    # Extract the boxes, getting the top-right corners from the index arrays
     x_starts = x_ixs[y_stops, x_stops]
     y_starts = y_ixs[y_stops, x_stops]
     ltrb_boxes = np.hstack([x_starts[:, None], y_starts[:, None], x_stops[:, None]+1, y_stops[:, None]+1])

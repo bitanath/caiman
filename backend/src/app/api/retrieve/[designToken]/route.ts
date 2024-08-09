@@ -29,11 +29,11 @@ export async function POST(request: Request,{ params }: { params: { designToken:
     const {access_token,refresh_token,uid,user_id,team_id} = querySnapshot.docs[0].data()
     if(!access_token || !refresh_token) return Response.json({ "error":"User not connected" },{status:403})
 
-    
+    console.log("Got refresh token ",refresh_token)
     const searchParams = new URLSearchParams()
     searchParams.append('grant_type','refresh_token')
     searchParams.append('refresh_token',refresh_token)
-    searchParams.append('scope','design:content:read design:meta:read')
+    searchParams.append('scope','design:content:read')
 
     const client_id=process.env.CANVA_CONNECT_ID || ""
     const client_secret=process.env.CANVA_CONNECT_SECRET || ""
@@ -48,11 +48,12 @@ export async function POST(request: Request,{ params }: { params: { designToken:
       body:searchParams
     })
     const data = await resp.json();
-    if(!data.access_token || !data.refresh_token) return Response.json({ "error":"User not connected" },{status:403})
+    console.log(data)
+    if(!data.access_token || !data.refresh_token) return Response.json({ "error":"Unable to refresh token" },{status:403})
     console.log("Scopes:",data.scope)
     await updateDoc(querySnapshot.docs[0].ref,{access_token:data.access_token,refresh_token:data.refresh_token,expires_in:data.expires_in})
 
-    console.log("Got new access token ",data.access_token)
+    console.log("Got new access token ",access_token)
 
     const fetcher = await fetch("https://api.canva.com/rest/v1/exports", {
       method: "POST",

@@ -29,21 +29,36 @@ export async function POST(request: Request,{ params }: { params: { designToken:
     const querySnapshot = await getDocs(queried)
     if(querySnapshot.empty) return Response.json({ "error":" Unable to get configuration correctly " },{status:403})
     const server_url = querySnapshot.docs[0].get("server_url")
-    const storage = getStorage(app,'gs://caiman-75133.appspot.com')
+    const storage_url = querySnapshot.docs[0].get("storage_url")
+    const storage = getStorage(app,storage_url)
     
-    const mountainsRef = ref(storage, 'check.jpg')
+    let imageRef = ref(storage, `/designs/${designId}/image.jpg`)
 
     const {url,prompt} = await request.json()
     if(!url) return Response.json({ error: "No URL found" },{status:403})
     console.log("Got request json ",url)
     const b64image = await imageUrlToBase64(url)
 
-    uploadString(mountainsRef,b64image,'base64',{contentType: 'image/jpeg'}) //Do not await this value instead let it upload whenever
-    const dloadUrl = await getDownloadURL(mountainsRef)
+    await uploadString(imageRef,b64image,'base64',{contentType: 'image/jpeg'}) 
+    const downloadImageUrl = await getDownloadURL(imageRef)
 
-    console.log("Got base 64 image now do something")
+    console.log("Got download image url",downloadImageUrl)
 
-    return Response.json({ "maki":"jiho",server_url,url,prompt,b64image },{status:200})
+    const serverResponse =  await queryServer(server_url,b64image,userToken)
+    console.log("Got server response",serverResponse)
+
+    if(!serverResponse.alternate || !serverResponse.background) return Response.json({ error: "Unable to convert image" },{status:403})
+
+    const {alternate,background} = serverResponse
+    imageRef = ref(storage, `/designs/${designId}/background.jpg`)
+    await uploadString(imageRef,background,'base64',{contentType: 'image/jpeg'})
+    const alternateUrl = await getDownloadURL(imageRef)
+
+    imageRef = ref(storage, `/designs/${designId}/alternate.jpg`)
+    await uploadString(imageRef,alternate,'base64',{contentType: 'image/jpeg'})
+    const backgroundUrl = await getDownloadURL(imageRef)
+
+    return Response.json({ alternateUrl,backgroundUrl },{status:200})
 
   }catch(e:any){
     return Response.json({ "error":e.toString() },{status:403})
@@ -58,3 +73,22 @@ const imageUrlToBase64 = async (url:string) => {
     const base64 = arrBuff.toString('base64')
     return base64
 };
+
+const queryServer = async (serverUrl:string,b64Image:string,userToken:string,prompt:string|undefined=undefined)=>{
+    const response = await fetch(serverUrl,{
+      method: "POST",
+      headers: {
+        "Content-Type":"application/json",
+        "Accept": "application/json",
+        "Authorization": userToken
+      },
+      body: JSON.stringify({
+        imgBase64: b64Image,
+        prompt: prompt
+      })
+    })
+    const json = await response.json()
+    const alternate = json.alternate
+    const background = json.background
+    return {alternate,background}
+}

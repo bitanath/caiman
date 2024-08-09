@@ -83,6 +83,12 @@ env:
       - BUILD
       - RUNTIME
 
+  - variable: FIREBASE_WEB_APP_ID
+    secret: firebaseWebAppId
+    availability:
+      - BUILD
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_FIREBASE_CLIENT_X509
     secret: firebaseCertX509
     availability:

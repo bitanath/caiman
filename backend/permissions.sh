@@ -12,3 +12,7 @@ firebase --project caiman-75133 --backend caiman apphosting:secrets:grantaccess 
 firebase --project caiman-75133 --backend caiman apphosting:secrets:grantaccess firebaseProjectId
 firebase --project caiman-75133 --backend caiman apphosting:secrets:grantaccess firebaseSenderId
 firebase --project caiman-75133 --backend caiman apphosting:secrets:grantaccess useSecureCookies
+firebase --project caiman-75133 --backend caiman apphosting:secrets:grantaccess canvaAppPlatformId
+firebase --project caiman-75133 --backend caiman apphosting:secrets:grantaccess canvaConnectPlatformId
+firebase --project caiman-75133 --backend caiman apphosting:secrets:grantaccess canvaConnectPlatformSecret
+firebase --project caiman-75133 --backend caiman apphosting:secrets:grantaccess firebaseWebAppId

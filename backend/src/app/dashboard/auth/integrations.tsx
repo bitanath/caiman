@@ -59,7 +59,8 @@ export default function Integrations({
 
     const handleConnect = async ()=>{
       if(linkedUser && canvaUser){
-        toast.success("Connected to Canva! Use the Caiman app from within Canva")
+        toast.loading("Reconnecting to Canva")
+        await connectToCanva()
       }else if(linkedUser){
         toast.warning("Connected to Canva but not linked to Design. Open from the Caiman app in Canva to continue.")
       }else{
@@ -172,7 +173,7 @@ export default function Integrations({
           </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleConnect} disabled={(linkedUser||false) && (canvaUser||false)}>{linkedUser && canvaUser ? "Connected" : "Connect to Canva"}</Button>
+          <Button onClick={handleConnect}>{linkedUser && canvaUser ? "Reconnect to Canva" : "Connect to Canva"}</Button>
         </CardFooter>
       </Card>
     )

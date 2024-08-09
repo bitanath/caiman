@@ -1,9 +1,10 @@
-import { ImageCard, Button, Rows, Columns, Box, Text, MultilineInput, Title, Carousel, Badge, SegmentedControl, Column, Link } from "@canva/app-ui-kit";
+import { ImageCard, Button, Rows, Columns, Box, Text, MultilineInput, Title, Carousel, Badge, SegmentedControl, Column, Link, Alert, ProgressBar, LoadingIndicator } from "@canva/app-ui-kit";
 import { OpenInNewIcon, EyeIcon, UndoIcon, WordCountDecorator, TextPlaceholder, TitlePlaceholder, Placeholder } from "@canva/app-ui-kit";
 
 import styles from "styles/components.css";
 import Spacer from "./spacer";
 import Toast from "./toast";
+import Page from "./page";
 
 import { DummyElement,ImageProps } from "./thumb";
 
@@ -11,48 +12,25 @@ import { config } from "../settings";
 import { auth } from "@canva/user";
 import { addNativeElement,getDesignToken, requestExport } from "@canva/design";
 
-import React,{useState,useEffect,useCallback, Dispatch, SetStateAction} from "react";
+import React,{useState,useEffect} from "react";
 
-export default function Interface({showAlert,level,setAlert,alert}:{
-    showAlert:(message:string,level:'critical' | 'warn' | 'positive' | 'info')=>void;
-    setAlert: Dispatch<SetStateAction<string|undefined>>
-    level:'critical'|'warn' | 'positive' | 'info'
-    alert?:string|undefined
+export default function Interface({setLinkage}:{
+  setLinkage: React.Dispatch<React.SetStateAction<string|null>>;
 }){
-    const heatmapImage = "https://img.freepik.com/free-vector/gradient-heat-map-background_23-2149528520.jpg?t=st=1722156716~exp=1722160316~hmac=0390026c4ba6a8059642476127ac95ba3faab20bc4cd38a0cc2be72228db2fa0&w=2000"
-    const [images,setImages] = useState([]) //list of image props
-    const [currentIndex,setCurrentIndex] = useState(0)
+
+    const [images,setImages] = useState<PageInterface[]>([]) //list of image props
+    const [errorMessage,setErrorMessage] = useState<string|undefined>(undefined)
+    const [lastFetch,setLastFetch] = useState<number>(0)
 
     useEffect(()=>{
-        //TODO now query for design here and get all the pages
-        fetchAllImages()
+        const currentTime = Date.now()
+        if((currentTime - lastFetch) > 60*1000){
+          fetchAllImages()
+        }
     })
 
-    function fetchImageProperties(url:string){
-      auth.getCanvaUserToken().then(userToken=>{
-        getDesignToken().then(took=>{
-          const designToken = took.token
-          return fetch(`${config.apiUrl}/api/design/${designToken}`,{
-            method: "POST",
-            mode: 'cors',
-            headers: {
-              Authorization: `Bearer ${userToken}`,
-              "Content-Type": "application/json",
-              "Accept": "application/json"
-            },
-            body: JSON.stringify({
-              "url":url
-            })
-          })
-        }).then(done=>{
-          return done.json()
-        }).then(json=>{
-          console.log("Got response from server",json)
-        })
-      })
-    }
-
-    function fetchAllImages(){
+    function fetchAllImages(callback?:()=>void|null){
+      console.log("Exporting design")
       auth.getCanvaUserToken().then(userToken=>{
         getDesignToken().then(took=>{
           const designToken = took.token
@@ -71,63 +49,66 @@ export default function Interface({showAlert,level,setAlert,alert}:{
         }).then(done=>{
           return done.json()
         }).then(json=>{
-          console.log("Got exported designs ",json)
           const {urls}:{urls:[string]} = json
-          if(!urls) throw 'Unable to get exported design'
+          if(!urls) throw json.error || 'Unable to get exported design'
           //TODO handle multi page designs
           const arr = urls.map((url,index)=>{
             console.log(url)
-            if(index == currentIndex){
-              console.log("Fetching image properties for ",url)
-              fetchImageProperties(url)
-            }
-            return {thumbnailUrl:url,thumbnailHeight:280,index}
+            return {image:url,height:280,index}
           })
+          console.log("Laying out images again")
+          setImages(arr)
+          setLastFetch(Date.now())
+
+          if(callback){
+            return callback()
+          }
 
         }).catch(err=>{
-            showAlert("Error "+err.toString(),"critical")
+            setErrorMessage("Error Try Reconnecting to Canva from the Caiman website. "+err.toString())
+            setLinkage(null)
         })
       })
     }
 
     return (
         <div className={styles.scrollContainer}>
-          <Toast visible={!!alert} tone={level} onDismiss={()=>{setAlert(undefined)}}>{alert}</Toast>
-          <Spacer padding="0.5u"></Spacer>
           <Rows spacing="0.5u">
+            {
+              images.length < 1 ?
+              <Box>
+                {errorMessage ? 
+                <>
+                  <Alert tone="critical">{errorMessage}</Alert>
+                  <Spacer padding="0.5u"></Spacer>
+                </> : <></>}
+                <div style={{height:"280px"}}>
+                  <Placeholder shape="rectangle"></Placeholder>
+                </div>
+                <TitlePlaceholder></TitlePlaceholder>
+                <TextPlaceholder></TextPlaceholder>
+                <Spacer padding="0.5u"></Spacer>
+                <LoadingIndicator size="large"></LoadingIndicator>
+                <Text alignment="center" size="small">Fetching designs from Canva</Text>
+              </Box>
+              : images.length < 2 ?
+              <Page image={images[0].image} height={images[0].height} index={images[0].index} globalRefresh={fetchAllImages}></Page>
+              : 
               <Carousel>
-                <ImageCard
-                  alt="grass image"
-                  ariaLabel="Add image to design"
-                  borderRadius="standard"
-                  bottomEnd={<Badge text="v2.3" tone="contrast"/>}
-                  bottomEndVisibility="always"
-                  onClick={() => {}}
-                  onDragStart={() => {}}
-                  thumbnailUrl= {heatmapImage}
-                />
-                <ImageCard
-                  alt="grass image"
-                  ariaLabel="Add image to design"
-                  borderRadius="standard"
-                  bottomEnd={<Badge text="v2.3" tone="contrast"/>}
-                  bottomEndVisibility="always"
-                  onClick={() => {}}
-                  onDragStart={() => {}}
-                  thumbnailUrl= {heatmapImage}
-                />
-                
+                {
+                  images.map((page,idx)=>{
+                    return <Page image={page.image} height={page.height} index={page.index} globalRefresh={fetchAllImages}></Page>
+                  })
+                }
               </Carousel>
-              
-              <Columns spacing="0.5u" align="center">
-                <Text size="xsmall" alignment="center">
-                  Bluer tones indicate more attention
-                </Text>
-                <Spacer direction="horizontal" padding="1u"></Spacer>
-                <Badge text="?" tone="info" tooltipLabel="Simulated using an ML Model trained on generic designs. May not be 100% accurate to human representation of attention."></Badge>
-              </Columns>
-            
+            }
           </Rows>
         </div>
       );
+}
+
+interface PageInterface{
+  image:string;
+  index:number;
+  height:number;
 }

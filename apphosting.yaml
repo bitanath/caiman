@@ -106,3 +106,9 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
+  - variable: FIREBASE_WEB_APP_ID
+    secret: firebaseWebAppId
+    availability:
+      - BUILD
+      - RUNTIME

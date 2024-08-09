@@ -12,12 +12,12 @@ class Net(nn.Module):
         self.preprocess = T.Compose([T.Resize(768),T.ToTensor(),T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
         self.postprocess = T.Compose([T.Resize(768),T.ToTensor()])
         self.layer_name = "features.16.0"
-        self.model = mobilenet_v3_large(True).eval().cuda()
+        self.model = mobilenet_v3_large(True).eval().cpu()
         self.hooked = {}
         
     def forward(self,x):
         hook = self.model.features[16][0].register_forward_hook(self._forward_hook)
-        tensor = self.preprocess(x).unsqueeze(0).cuda()
+        tensor = self.preprocess(x).unsqueeze(0).cpu()
         output = self.model(tensor)
         feature = self.hooked['output']
         h,w = output.shape

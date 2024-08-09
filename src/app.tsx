@@ -20,7 +20,7 @@ export const App = () => {
   const [loading,setLoading] = useState(true)
   const [design,setDesign] = useState(null)
   const [user,setUser] = useState(null)
-  const [linkage,setLinkage] = useState(null)
+  const [linkage,setLinkage] = useState<string|null>(null)
   const [reload,setReload] = useState(false)
   
   const [alert,setAlert] = useState<string|undefined>(undefined)
@@ -103,7 +103,7 @@ export const App = () => {
       </div>
     )
   }else{
-    return <Interface showAlert={showAlert} setAlert={setAlert} alert={alert} level={level}></Interface>
+    return <Interface setLinkage={setLinkage}></Interface>
   }
   
 };
